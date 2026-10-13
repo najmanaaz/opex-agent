@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpEx Intelligence — T4Tangerine</title>
+  <meta name="description" content="Describe a goal and the team you have. OpEx Intelligence turns it into a resource plan: sub-goals, people and skills, hiring gaps, cost and P&amp;L impact.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍊</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --amber: #FF9500; --dark: #1A1208; --white: #FFFFFF; --off-white: #FAFAF8;
+      --body: #57534E; --muted: #A8A29E; --border: #E7E5E4; --green: #2E7D32; --red: #C62828;
+      --font-serif: 'Inter', sans-serif; --font-sans: 'DM Sans', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-sans); font-size: 15px; line-height: 1.65; color: var(--body); background: var(--white); -webkit-font-smoothing: antialiased; }
+    h1, h2, h3, h4, h5 { font-family: var(--font-serif); color: var(--dark); font-weight: 700; }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    [hidden] { display: none !important; }
+
+    /* Navbar (links go back to www.t4tangerine.com) */
+    .navbar { position: sticky; top: 0; z-index: 100; background: rgba(26, 18, 8, 0.97); border-bottom: 1px solid rgba(255, 184, 85, 0.15); }
+    .navbar .container { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
+    .navbar-logo { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--white); letter-spacing: -0.02em; white-space: nowrap; }
+    .navbar-logo .logo-dot { color: var(--amber); }
+    .navbar-links { display: none; list-style: none; gap: 28px; align-items: center; }
+    .navbar-links a { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); white-space: nowrap; }
+    .navbar-links a:hover, .navbar-links a.active { color: var(--white); }
+    .btn-cta { display: inline-flex; align-items: center; gap: 6px; background: var(--amber); color: var(--dark); font-family: var(--font-sans); font-size: 15px; font-weight: 600; padding: 12px 22px; border-radius: 8px; border: none; cursor: pointer; }
+    .btn-cta:disabled { opacity: 0.6; cursor: wait; }
+    .navbar-links .btn-cta { color: var(--dark); padding: 9px 16px; font-size: 14px; }
+    .btn-ghost { display: inline-flex; align-items: center; gap: 6px; background: var(--white); color: var(--dark); font-family: var(--font-sans); font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; }
+    .btn-ghost:hover { border-color: var(--muted); }
+    .btn-ghost:disabled { opacity: 0.6; cursor: wait; }
+    .btn-link { background: none; border: none; color: var(--body); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+    .mobile-links { display: none; gap: 14px; font-size: 14px; }
+    .mobile-links a { color: rgba(255,255,255,0.75); }
+
+    /* Hero */
+    .hero { padding: 56px 0 32px; }
+    .kicker { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 10px; }
+    .hero h1 { font-size: 34px; line-height: 1.15; margin-bottom: 14px; max-width: 760px; }
+    .hero h1 .accent { font-family: 'Playfair Display', serif; font-style: italic; color: #5B7F6E; }
+    .hero p { font-size: 17px; max-width: 680px; }
+    .hero-points { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 18px; font-size: 14px; }
+    .hero-points li::before { content: '\2713'; color: var(--green); font-weight: 700; margin-right: 6px; }
+
+    /* Cards */
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .gate { text-align: center; padding: 40px 24px; background: var(--off-white); }
+    .gate h2 { font-size: 22px; margin-bottom: 8px; }
+    .gate p { max-width: 520px; margin: 0 auto 20px; }
+    .gate-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .gate-note { font-size: 13px; color: var(--muted); margin-top: 14px; }
+    .account-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; margin-bottom: 18px; }
+    .account-bar strong { color: var(--dark); }
+    .app-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+    .section-title { font-size: 18px; margin-bottom: 14px; }
+
+    /* Form */
+    .form-group { margin-bottom: 18px; }
+    .form-group > label, .group-label { display: block; font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 6px; }
+    textarea, input[type="number"], select { width: 100%; font-family: var(--font-sans); font-size: 15px; color: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--white); }
+    textarea { min-height: 96px; resize: vertical; }
+    textarea:focus, input:focus, select:focus { outline: none; border-color: var(--amber); }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .checks { display: flex; flex-wrap: wrap; gap: 8px; }
+    .check { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-size: 14px; cursor: pointer; }
+    .check:has(input:checked) { border-color: var(--amber); background: #FFF7EB; }
+    .role-row { display: grid; grid-template-columns: 1fr 76px 36px; gap: 8px; margin-bottom: 8px; }
+    .role-remove { border: 1px solid var(--border); background: var(--white); border-radius: 8px; cursor: pointer; font-size: 16px; color: var(--muted); }
+    .form-error { color: var(--red); font-size: 14px; margin-top: 10px; }
+    .working { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 14px; color: var(--dark); }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--amber); border-radius: 50%; animation: spin 0.8s linear infinite; flex: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* History */
+    .plan-list { list-style: none; }
+    .plan-item { border-bottom: 1px solid var(--border); padding: 10px 0; }
+    .plan-item:last-child { border-bottom: none; }
+    .plan-open { display: block; width: 100%; text-align: left; background: none; border: none; font: inherit; cursor: pointer; color: var(--dark); font-weight: 600; font-size: 14px; line-height: 1.4; }
+    .plan-open:hover, .plan-item.selected .plan-open { color: #B45309; }
+    .plan-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .chip { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 4px; margin-left: 4px; }
+    .chip-COMPLETE { background: #DCFCE7; color: #166534; }
+    .chip-PENDING { background: #FFF7ED; color: #9A3412; }
+    .chip-FAILED { background: #FEE2E2; color: #991B1B; }
+    .confirm { font-size: 13px; color: var(--dark); margin-top: 6px; }
+    .confirm button { margin-left: 8px; }
+    .btn-danger { background: var(--red); color: var(--white); border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .empty { font-size: 14px; color: var(--muted); }
+
+    /* Plan */
+    .plan-section { margin-top: 28px; }
+    .plan-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .plan-head h2 { font-size: 22px; }
+    .plan-date { font-size: 13px; color: var(--muted); }
+    .plan-inputs { background: var(--off-white); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; font-size: 14px; }
+    .plan-inputs strong { color: var(--dark); }
+    .result-summary { color: var(--dark); font-size: 16px; line-height: 1.7; margin-bottom: 22px; }
+    .result-section { margin-bottom: 22px; }
+    .result-section h5 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .result-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .result-card { background: var(--off-white); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .rc-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+    .rc-value { font-size: 15px; font-weight: 600; color: var(--dark); }
+    .rc-note { font-size: 13px; color: var(--body); margin-top: 4px; }
+    .result-list { list-style: none; }
+    .result-list li { padding: 9px 0; border-bottom: 1px solid #F0EDE8; font-size: 14px; }
+    .result-list li:last-child { border-bottom: none; }
+    .sub-goal-title { font-weight: 600; color: var(--dark); }
+    .sub-goal-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .result-pnl { background: #FFF4E5; border: 1px solid #F5C77E; border-radius: 10px; padding: 16px 18px; }
+    .pnl-line { font-size: 13px; font-weight: 600; color: #B45309; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+    .pnl-detail { font-size: 15px; }
+    .risk-item { display: flex; gap: 10px; align-items: flex-start; }
+    .risk-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; flex: none; margin-top: 2px; }
+    .risk-high { background: #FEE2E2; color: #991B1B; }
+    .risk-medium { background: #FFF7ED; color: #9A3412; }
+    .risk-low { background: #DCFCE7; color: #166534; }
+    .disclaimer { font-size: 12px; color: var(--muted); margin-top: 18px; }
+
+    /* PDF export: an off-screen copy */
+    .pdf-holder { position: fixed; left: -10000px; top: 0; }
+    .pdf-export { width: 760px; background: var(--white); padding: 8px 4px; }
+    .pdf-export .pdf-kicker { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .pdf-export h1 { font-size: 26px; margin-bottom: 4px; }
+    .pdf-export .result-grid { grid-template-columns: 1fr 1fr; }
+    .pdf-export .pdf-footer { margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); text-align: center; }
+
+    footer { border-top: 1px solid var(--border); margin-top: 56px; padding: 28px 0; font-size: 13px; color: var(--muted); }
+    footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+    @media (min-width: 768px) {
+      .hero h1 { font-size: 44px; }
+      .result-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 1000px) {
+      .navbar-links { display: flex; }
+      .app-grid { grid-template-columns: minmax(0, 1fr) 340px; }
+    }
+    @media (max-width: 999px) {
+      .mobile-links { display: flex; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="https://www.t4tangerine.com/" class="navbar-logo">🍊T4Tangerine<span class="logo-dot">.</span></a>
+      <ul class="navbar-links">
+        <li><a href="https://www.t4tangerine.com/aeo">AEO Marketing</a></li>
+        <li><a href="https://stack.t4tangerine.com/">Stack Optimizer</a></li>
+        <li><a href="https://opex.t4tangerine.com/" class="active">OpEx Intelligence</a></li>
+        <li><a href="https://www.t4tangerine.com/blog">Blog</a></li>
+        <li><a href="https://www.t4tangerine.com/funding">Funding</a></li>
+        <li><a href="https://www.t4tangerine.com/book" class="btn-cta">&#x1F34A; Let's T-4-Talk!</a></li>
+      </ul>
+      <div class="mobile-links"><a href="https://www.t4tangerine.com/">Website</a><a href="https://www.t4tangerine.com/book">Book a call</a></div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <p class="kicker">OpEx Intelligence</p>
+      <h1>Know what a goal <span class="accent">really takes.</span></h1>
+      <p>Describe a goal and the team you have. In about 30 seconds you get the plan: sub-goals and their order, who does what at what capacity, the skills and hires you're missing, the cost, and the P&amp;L line it moves.</p>
+      <ul class="hero-points">
+        <li>Grounded in the team you actually have</li>
+        <li>Hiring gaps and risks called out</li>
+        <li>Saved to your account, downloadable as PDF</li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card gate" id="gate" hidden>
+      <h2>Sign in to plan your goals</h2>
+      <p>Use your T4Tangerine account (the same one as the Stack Optimizer). Your plans are saved to your account, stored in the EU, and only you can see them.</p>
+      <div class="gate-actions">
+        <button type="button" class="btn-cta" id="signInBtn">Sign in</button>
+        <button type="button" class="btn-ghost" id="signUpBtn">Create a free account</button>
+      </div>
+      <p class="gate-note">Free to use · up to 20 plans a day</p>
+    </section>
+
+    <section id="app" hidden>
+      <div class="account-bar">
+        <span>Signed in as <strong id="userEmail"></strong></span>
+        <button type="button" class="btn-link" id="signOutBtn">Sign out</button>
+      </div>
+
+      <div class="app-grid">
+        <form class="card" id="planForm" novalidate>
+          <h2 class="section-title">New plan</h2>
+          <div class="form-group">
+            <label for="goal">What is the goal?</label>
+            <textarea id="goal" maxlength="2000" placeholder="e.g. Reduce median first-response time for Tier 1 support tickets from 4.2 hours to under 2 hours by the end of Q1."></textarea>
+            <p class="hint">Be specific: the outcome, the number, and the deadline.</p>
+          </div>
+          <div class="form-group">
+            <span class="group-label">Which functions are involved?</span>
+            <div class="checks" id="domains">
+              <label class="check"><input type="checkbox" value="Engineering" checked> Engineering</label>
+              <label class="check"><input type="checkbox" value="Product"> Product</label>
+              <label class="check"><input type="checkbox" value="Data"> Data</label>
+              <label class="check"><input type="checkbox" value="Design"> Design</label>
+              <label class="check"><input type="checkbox" value="Operations"> Operations</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <span class="group-label">Which people do you have available?</span>
+            <div id="roles"></div>
+            <button type="button" class="btn-ghost" id="addRole">+ Add a role</button>
+          </div>
+          <div class="form-group">
+            <label for="timeline">Timeline (weeks)</label>
+            <input type="number" id="timeline" min="1" max="52" value="12">
+          </div>
+          <button type="submit" class="btn-cta" id="createBtn">Create plan</button>
+          <div class="working" id="working" hidden><span class="spinner"></span><span>Building your plan. This takes about 30 seconds.</span></div>
+          <p class="form-error" id="formError" hidden></p>
+        </form>
+
+        <aside class="card">
+          <h2 class="section-title">Your plans</h2>
+          <ul class="plan-list" id="planList"></ul>
+          <p class="empty" id="planEmpty" hidden>No plans yet. Your plans will appear here.</p>
+        </aside>
+      </div>
+
+      <section class="plan-section" id="planView" hidden></section>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>&copy; 2026 T4Tangerine · Luxembourg 🇱🇺</span>
+      <span>AI-generated plans: check figures before you commit. <a href="https://www.t4tangerine.com/privacy" style="text-decoration:underline;">Privacy policy</a></span>
+    </div>
+  </footer>
+
+  <script>
+    var ROLES = ['Backend Engineer', 'Frontend Engineer', 'Full-Stack Engineer', 'Platform / Infra Engineer', 'DevOps / SRE',
+      'Data Engineer', 'Data Scientist / ML Engineer', 'Data Analyst', 'Product Manager', 'Product Designer', 'UX Researcher',
+      'Engineering Manager', 'Technical Program Manager', 'QA / Test Engineer', 'Security Engineer', 'Solutions Architect',
+      'Technical Writer', 'Operations / Support'];
+    var AUTH_KEY = 't4t.opexApp.auth.v1';
+    var appCfg = null;
+    var currentPlan = null;
+
+    function $(id) { return document.getElementById(id); }
+    function escapeHtml(str) {
+      if (str === undefined || str === null) return '';
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(String(str)));
+      return div.innerHTML;
+    }
+    function formatDateTime(iso) {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' +
+        d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ── Sign-in: authorization code flow with PKCE against the Cognito managed login ──
+    function b64url(bytes) {
+      var str = '';
+      bytes.forEach(function(b) { str += String.fromCharCode(b); });
+      return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function randomString() { var b = new Uint8Array(32); crypto.getRandomValues(b); return b64url(b); }
+    function decodeJwt(token) {
+      var part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(part), function(c) { return c.charCodeAt(0); })));
+    }
+    function redirectUri() { return location.origin + '/'; }
+
+    function startLogin(signUp) {
+      var verifier = randomString(), state = randomString();
+      try { sessionStorage.setItem('t4t.opex.pkce', JSON.stringify({ verifier: verifier, state: state })); } catch (e) {}
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)).then(function(hash) {
+        var query = new URLSearchParams({
+          response_type: 'code', client_id: appCfg.clientId, redirect_uri: redirectUri(),
+          scope: 'openid email profile', state: state,
+          code_challenge: b64url(new Uint8Array(hash)), code_challenge_method: 'S256'
+        });
+        location.assign(appCfg.loginUrl + (signUp ? '/signup' : '/oauth2/authorize') + '?' + query);
+      });
+    }
+    function tokenRequest(params) {
+      return fetch(appCfg.loginUrl + '/oauth2/token', {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(params)
+      }).then(function(res) { if (!res.ok) throw new Error('Sign-in failed (' + res.status + ')'); return res.json(); });
+    }
+    function loadAuth() { try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { return null; } }
+    function saveTokens(tokens, previousRefresh) {
+      var auth = { idToken: tokens.id_token, expiresAt: Date.now() + (tokens.expires_in || 3600) * 1000, refreshToken: tokens.refresh_token || previousRefresh };
+      try { localStorage.setItem(AUTH_KEY, JSON.stringify(auth)); } catch (e) {}
+      return auth;
+    }
+    function clearAuth() { try { localStorage.removeItem(AUTH_KEY); } catch (e) {} }
+    function getIdToken(forceRefresh) {
+      var auth = loadAuth();
+      if (!auth) return Promise.resolve(null);
+      if (!forceRefresh && auth.idToken && auth.expiresAt - 60000 > Date.now()) return Promise.resolve(auth.idToken);
+      if (!auth.refreshToken) return Promise.resolve(null);
+      return tokenRequest({ grant_type: 'refresh_token', client_id: appCfg.clientId, refresh_token: auth.refreshToken })
+        .then(function(t) { return saveTokens(t, auth.refreshToken).idToken; })
+        .catch(function() { clearAuth(); return null; });
+    }
+    function handleLoginRedirect() {
+      var query = new URLSearchParams(location.search);
+      if (!query.get('code')) return Promise.resolve();
+      var pkce = null;
+      try { pkce = JSON.parse(sessionStorage.getItem('t4t.opex.pkce') || 'null'); sessionStorage.removeItem('t4t.opex.pkce'); } catch (e) {}
+      history.replaceState(null, '', location.pathname);
+      if (!pkce || query.get('state') !== pkce.state) return Promise.resolve();
+      return tokenRequest({ grant_type: 'authorization_code', client_id: appCfg.clientId, code: query.get('code'), redirect_uri: redirectUri(), code_verifier: pkce.verifier })
+        .then(function(t) { saveTokens(t); });
+    }
+    function signOut() {
+      clearAuth();
+      location.assign(appCfg.loginUrl + '/logout?' + new URLSearchParams({ client_id: appCfg.clientId, logout_uri: redirectUri() }));
+    }
+
+    // Calls the API with the signed-in user's token; refreshes it once on 401
+    function api(path, options) {
+      options = options || {};
+      function call(token) {
+        var headers = { Authorization: token };
+        if (options.body) headers['Content-Type'] = 'application/json';
+        return fetch(appCfg.apiUrl + path, { method: options.method || 'GET', headers: headers, body: options.body ? JSON.stringify(options.body) : undefined });
+      }
+      function signedOut() { showSignedOut(); throw new Error('Please sign in again.'); }
+      return getIdToken().then(function(token) {
+        if (!token) signedOut();
+        return call(token).then(function(res) {
+          if (res.status !== 401) return res;
+          return getIdToken(true).then(function(fresh) { if (!fresh) signedOut(); return call(fresh); });
+        });
+      });
+    }
+    function readJson(res) { return res.status === 204 ? Promise.resolve({}) : res.json().catch(function() { return {}; }); }
+
+    function showSignedOut() { $('gate').hidden = false; $('app').hidden = true; }
+    function showSignedIn(claims) {
+      $('gate').hidden = true; $('app').hidden = false;
+      $('userEmail').textContent = claims.email || 'your account';
+      loadPlans();
+    }
+
+    // ── Form ──
+    function addRoleRow(role, count) {
+      var row = document.createElement('div');
+      row.className = 'role-row';
+      row.innerHTML = '<select class="role-name" aria-label="Role"><option value="">Select a role…</option>' +
+        ROLES.map(function(r) { return '<option>' + escapeHtml(r) + '</option>'; }).join('') + '</select>' +
+        '<input type="number" class="role-count" min="1" max="50" value="' + (count || 1) + '" aria-label="How many">' +
+        '<button type="button" class="role-remove" aria-label="Remove role">&times;</button>';
+      if (role) row.querySelector('select').value = role;
+      row.querySelector('.role-remove').addEventListener('click', function() {
+        if (document.querySelectorAll('.role-row').length > 1) row.remove();
+      });
+      $('roles').appendChild(row);
+    }
+
+    function formError(msg) { $('formError').textContent = msg; $('formError').hidden = !msg; }
+
+    function readForm() {
+      var roles = [], teamSize = 0;
+      document.querySelectorAll('.role-row').forEach(function(row) {
+        var name = row.querySelector('.role-name').value;
+        var count = parseInt(row.querySelector('.role-count').value, 10) || 1;
+        if (name) { roles.push({ role: name, count: count }); teamSize += count; }
+      });
+      var domains = Array.prototype.map.call(document.querySelectorAll('#domains input:checked'), function(cb) { return cb.value; });
+      return { goal: $('goal').value.trim(), availableRoles: roles, teamSize: teamSize, timeline: $('timeline').value, domain: (domains.length ? domains : ['Engineering']).join(',') };
+    }
+
+    function createPlan(e) {
+      e.preventDefault();
+      var body = readForm();
+      if (body.goal.length < 10) return formError('Please describe your goal in at least 10 characters.');
+      if (!body.availableRoles.length) return formError('Please add at least one role you have available.');
+      formError('');
+      $('createBtn').disabled = true;
+      $('working').hidden = false;
+      api('/plans', { method: 'POST', body: body })
+        .then(function(res) { return readJson(res).then(function(data) { if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.'); return data; }); })
+        .then(function(data) { loadPlans(data.planId); return waitForPlan(data.planId); })
+        .then(function(plan) { showPlan(plan); loadPlans(plan.planId); })
+        .catch(function(err) { formError(err.message); })
+        .finally(function() { $('createBtn').disabled = false; $('working').hidden = true; });
+    }
+
+    // The plan is built in the background; poll until it's done (or ~3 minutes)
+    function waitForPlan(planId) {
+      var tries = 0;
+      return new Promise(function(resolve, reject) {
+        (function poll() {
+          api('/plans/' + planId).then(function(res) { return readJson(res).then(function(p) { return { ok: res.ok, p: p }; }); })
+            .then(function(r) {
+              if (!r.ok) return reject(new Error(r.p.error || 'Could not load the plan.'));
+              if (r.p.status === 'COMPLETE') return resolve(r.p);
+              if (r.p.status === 'FAILED') return reject(new Error(r.p.error || "We couldn't generate this plan. Please try again."));
+              if (++tries > 60) return reject(new Error('This is taking longer than usual. It will appear in Your plans when it is ready.'));
+              setTimeout(poll, 3000);
+            })
+            .catch(reject);
+        })();
+      });
+    }
+
+    // ── History ──
+    function loadPlans(selectedId) {
+      api('/plans').then(function(res) { return readJson(res); }).then(function(data) {
+        var plans = data.plans || [];
+        var selected = selectedId || (currentPlan && currentPlan.planId);
+        $('planEmpty').hidden = plans.length > 0;
+        $('planList').innerHTML = plans.map(function(p) {
+          var goal = String(p.goal || '');
+          return '<li class="plan-item' + (p.planId === selected ? ' selected' : '') + '" data-id="' + escapeHtml(p.planId) + '">' +
+            '<button type="button" class="plan-open">' + escapeHtml(goal.length > 90 ? goal.slice(0, 90) + '…' : goal) + '</button>' +
+            '<div class="plan-meta"><span>' + escapeHtml(formatDateTime(p.createdAt)) + '<span class="chip chip-' + escapeHtml(p.status) + '">' +
+            escapeHtml(p.status === 'COMPLETE' ? 'Ready' : p.status === 'PENDING' ? 'Building' : 'Failed') + '</span></span>' +
+            '<button type="button" class="btn-link plan-delete">Delete</button></div>' +
+            '<div class="confirm" hidden>Delete this plan? <button type="button" class="btn-danger plan-confirm">Delete</button><button type="button" class="btn-link plan-cancel">Cancel</button></div></li>';
+        }).join('');
+      }).catch(function() {});
+    }
+
+    $('planList').addEventListener('click', function(e) {
+      var item = e.target.closest('.plan-item');
+      if (!item) return;
+      var id = item.getAttribute('data-id');
+      if (e.target.closest('.plan-open')) {
+        api('/plans/' + id).then(function(res) { return readJson(res); }).then(function(p) {
+          if (p.status === 'COMPLETE') { formError(''); showPlan(p); loadPlans(id); }
+          else if (p.status === 'PENDING') formError('This plan is still being built. It will be ready in a moment.');
+          else formError(p.error || 'This plan could not be generated.');
+        }).catch(function(err) { formError(err.message); });
+      } else if (e.target.closest('.plan-delete')) {
+        item.querySelector('.confirm').hidden = false;
+      } else if (e.target.closest('.plan-cancel')) {
+        item.querySelector('.confirm').hidden = true;
+      } else if (e.target.closest('.plan-confirm')) {
+        api('/plans/' + id, { method: 'DELETE' }).then(function(res) {
+          if (!res.ok && res.status !== 404) throw new Error('Could not delete the plan.');
+          if (currentPlan && currentPlan.planId === id) { currentPlan = null; $('planView').hidden = true; }
+          loadPlans();
+        }).catch(function(err) { formError(err.message); });
+      }
+    });
+
+    // ── Plan view ──
+    function inputsHtml(input) {
+      var team = (input.roles || []).map(function(r) { return r.count + ' × ' + r.role; }).join(', ');
+      return '<div class="plan-inputs"><div><strong>Goal:</strong> ' + escapeHtml(input.goal) + '</div>' +
+        '<div><strong>Team:</strong> ' + escapeHtml(team) + ' (' + escapeHtml(input.teamSize) + ' people)</div>' +
+        '<div><strong>Timeline:</strong> ' + escapeHtml(input.timelineWeeks) + ' weeks · <strong>Functions:</strong> ' + escapeHtml((input.domains || []).join(', ')) + '</div></div>';
+    }
+
+    function planBodyHtml(d) {
+      var html = '';
+      if (d.summary) html += '<p class="result-summary">' + escapeHtml(d.summary) + '</p>';
+      if (d.roles && d.roles.length) {
+        html += '<div class="result-section"><h5>Headcount &amp; roles</h5><div class="result-grid">';
+        d.roles.forEach(function(r) {
+          html += '<div class="result-card"><div class="rc-label">' + escapeHtml(r.role) + '</div><div class="rc-value">' + escapeHtml(r.count) + ' person' + (r.count > 1 ? 's' : '') + ' at ' + escapeHtml(r.capacityPercent) + '% capacity</div>' +
+            (r.rationale ? '<div class="rc-note">' + escapeHtml(r.rationale) + '</div>' : '') + '</div>';
+        });
+        html += '</div></div>';
+      }
+      if (d.hiringNeeded && d.hiringNeeded.length) {
+        html += '<div class="result-section"><h5>⚠ Hiring needed</h5><div class="result-grid">';
+        d.hiringNeeded.forEach(function(h) {
+          var pri = String(h.priority || 'Important').toLowerCase();
+          var cls = pri === 'critical' ? 'risk-high' : pri === 'nice-to-have' ? 'risk-low' : 'risk-medium';
+          var bar = pri === 'critical' ? '#EF4444' : pri === 'nice-to-have' ? '#22C55E' : '#F59E0B';
+          html += '<div class="result-card" style="border-left:3px solid ' + bar + ';"><div class="rc-label">' + escapeHtml(h.role) + ' <span class="risk-badge ' + cls + '">' + escapeHtml(h.priority || 'Important') + '</span></div>' +
+            '<div class="rc-value">' + escapeHtml(h.count) + ' person' + (h.count > 1 ? 's' : '') + '</div>' + (h.reason ? '<div class="rc-note">' + escapeHtml(h.reason) + '</div>' : '') + '</div>';
+        });
+        html += '</div></div>';
+      }
+      if (d.skills && d.skills.length) {
+        html += '<div class="result-section"><h5>Key skills</h5><div class="result-grid">' +
+          d.skills.map(function(s) { return '<div class="result-card"><div class="rc-value">' + escapeHtml(s) + '</div></div>'; }).join('') + '</div></div>';
+      }
+      if (d.estimatedDuration) html += '<div class="result-section"><div class="result-card"><div class="rc-label">Estimated duration</div><div class="rc-value">' + escapeHtml(d.estimatedDuration) + '</div></div></div>';
+      if (d.subGoals && d.subGoals.length) {
+        html += '<div class="result-section"><h5>Sub-goals / work breakdown</h5><ul class="result-list">';
+        d.subGoals.forEach(function(sg) {
+          var meta = [];
+          if (sg.duration) meta.push(sg.duration);
+          if (sg.dependencies && sg.dependencies.length) meta.push('Depends on: ' + sg.dependencies.join(', '));
+          html += '<li><div class="sub-goal-title">' + escapeHtml(sg.title) + '</div><div>' + escapeHtml(sg.description) + '</div>' +
+            (meta.length ? '<div class="sub-goal-meta">' + escapeHtml(meta.join(' · ')) + '</div>' : '') + '</li>';
+        });
+        html += '</ul></div>';
+      }
+      if (d.costFactors && d.costFactors.length) {
+        html += '<div class="result-section"><h5>Cost factors</h5><ul class="result-list">' + d.costFactors.map(function(c) { return '<li>' + escapeHtml(c) + '</li>'; }).join('') + '</ul></div>';
+      }
+      if (d.ppiLine) {
+        html += '<div class="result-section"><h5>P&amp;L impact</h5><div class="result-pnl"><div class="pnl-line">' + escapeHtml(d.ppiLine.line) + ' — ' + escapeHtml(d.ppiLine.metric) + '</div>' +
+          '<div class="pnl-detail">' + escapeHtml(d.ppiLine.direction) + '</div></div></div>';
+      }
+      if (d.risks && d.risks.length) {
+        html += '<div class="result-section"><h5>Risks</h5><ul class="result-list">';
+        d.risks.forEach(function(r) {
+          var sev = String(r.severity || 'Medium').toLowerCase();
+          var cls = sev === 'high' ? 'risk-high' : sev === 'low' ? 'risk-low' : 'risk-medium';
+          html += '<li><div class="risk-item"><span class="risk-badge ' + cls + '">' + escapeHtml(r.severity || 'Medium') + '</span><div><strong style="color:var(--dark);">' + escapeHtml(r.risk) + '</strong>' +
+            (r.mitigation ? '<div class="rc-note">Mitigation: ' + escapeHtml(r.mitigation) + '</div>' : '') + '</div></div></li>';
+        });
+        html += '</ul></div>';
+      }
+      return html;
+    }
+
+    function showPlan(p) {
+      currentPlan = p;
+      var view = $('planView');
+      view.innerHTML = '<div class="card"><div class="plan-head"><div><h2>Your plan</h2><div class="plan-date">Generated ' + escapeHtml(formatDateTime(p.updatedAt || p.createdAt)) + '</div></div>' +
+        '<button type="button" class="btn-ghost" id="pdfBtn">&#x2B07; Download PDF</button></div>' +
+        inputsHtml(p.input || {}) + planBodyHtml(p.plan || {}) +
+        '<p class="disclaimer">AI-generated plan (Claude on Amazon Bedrock). Check figures and assumptions before you commit.</p></div>';
+      view.hidden = false;
+      $('pdfBtn').addEventListener('click', downloadPdf);
+      view.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── PDF download ──
+    var scriptPromises = {};
+    function loadScript(src) {
+      if (!scriptPromises[src]) {
+        scriptPromises[src] = new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          s.src = src; s.onload = resolve;
+          s.onerror = function() { delete scriptPromises[src]; reject(new Error('Could not load ' + src)); };
+          document.head.appendChild(s);
+        });
+      }
+      return scriptPromises[src];
+    }
+
+    function downloadPdf() {
+      var p = currentPlan, btn = $('pdfBtn');
+      if (!p || !btn) return;
+      btn.disabled = true; btn.textContent = 'Preparing PDF…';
+      var when = new Date(p.updatedAt || p.createdAt);
+      var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+      var stamp = when.getFullYear() + '-' + pad(when.getMonth() + 1) + '-' + pad(when.getDate()) + '-' + pad(when.getHours()) + pad(when.getMinutes());
+      var slug = String((p.input || {}).goal || 'goal').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').split('-').slice(0, 5).join('-') || 'goal';
+      var filename = 'opex-plan-' + slug + '-' + stamp + '.pdf';
+
+      var wrap = document.createElement('div');
+      wrap.className = 'pdf-export';
+      wrap.innerHTML = '<div class="pdf-kicker">T4Tangerine · OpEx Intelligence</div><h1>Goal decomposition &amp; resource plan</h1>' +
+        '<div class="plan-date" style="margin-bottom:16px;">Generated ' + escapeHtml(formatDateTime(when)) + '</div>' +
+        inputsHtml(p.input || {}) + planBodyHtml(p.plan || {}) +
+        '<p class="pdf-footer">Generated by T4Tangerine OpEx Intelligence on ' + escapeHtml(formatDateTime(when)) + ' · opex.t4tangerine.com · AI-generated plan: check figures before you commit.</p>';
+      var holder = document.createElement('div');
+      holder.className = 'pdf-holder';
+      holder.appendChild(wrap);
+      document.body.appendChild(holder);
+      function done() { holder.remove(); btn.disabled = false; btn.innerHTML = '&#x2B07; Download PDF'; }
+
+      Promise.all([
+        loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'),
+        loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js')
+      ])
+        .then(function() { return window.html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0, windowWidth: 1100 }); })
+        .then(function(canvas) { savePdfPages(canvas, wrap, filename); done(); })
+        .catch(function() { done(); formError("The PDF could not be created in this browser. Please try again, or use your browser's Print > Save as PDF."); });
+    }
+
+    // Slice one tall canvas into A4 pages, breaking between cards, list items and sections
+    function savePdfPages(canvas, wrap, filename) {
+      var margin = 12, pageW = 210, pageH = 297;
+      var innerW = pageW - margin * 2, innerH = pageH - margin * 2 - 6;
+      var cssW = wrap.offsetWidth, totalH = wrap.offsetHeight;
+      var pxPerMm = cssW / innerW, pagePx = innerH * pxPerMm, scale = canvas.width / cssW;
+      var origin = wrap.getBoundingClientRect().top, breaks = [];
+      wrap.querySelectorAll('.plan-inputs, .result-section, .result-card, .result-pnl, .pdf-footer').forEach(function(el) { breaks.push(el.getBoundingClientRect().top - origin - 6); });
+      wrap.querySelectorAll('.result-section > h5, .result-list li, .result-summary').forEach(function(el) { breaks.push(el.getBoundingClientRect().top - origin - 1); });
+      breaks.sort(function(a, b) { return a - b; });
+      var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      var slices = [], start = 0;
+      while (start < totalH - 1) {
+        var end = Math.min(start + pagePx, totalH);
+        if (end < totalH) {
+          var best = null;
+          breaks.forEach(function(b) { if (b > start + pagePx * 0.35 && b <= end) best = b; });
+          if (best !== null) end = best;
+        }
+        slices.push([start, end]); start = end;
+      }
+      slices.forEach(function(sl, i) {
+        var h = Math.round((sl[1] - sl[0]) * scale);
+        var page = document.createElement('canvas');
+        page.width = canvas.width; page.height = h;
+        var ctx = page.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, page.width, h);
+        ctx.drawImage(canvas, 0, Math.round(sl[0] * scale), canvas.width, h, 0, 0, canvas.width, h);
+        if (i > 0) pdf.addPage();
+        pdf.addImage(page.toDataURL('image/jpeg', 0.9), 'JPEG', margin, margin, innerW, (sl[1] - sl[0]) / pxPerMm);
+        pdf.setFontSize(8); pdf.setTextColor(140);
+        pdf.text('Page ' + (i + 1) + ' of ' + slices.length, pageW - margin, pageH - 7, { align: 'right' });
+      });
+      pdf.save(filename);
+    }
+
+    // ── Start ──
+    addRoleRow();
+    $('addRole').addEventListener('click', function() { addRoleRow(); });
+    $('planForm').addEventListener('submit', createPlan);
+    $('signInBtn').addEventListener('click', function() { startLogin(false); });
+    $('signUpBtn').addEventListener('click', function() { startLogin(true); });
+    $('signOutBtn').addEventListener('click', signOut);
+    fetch('/app-config.json')
+      .then(function(res) { return res.json(); })
+      .then(function(cfg) { appCfg = cfg; return handleLoginRedirect(); })
+      .then(function() { return getIdToken(); })
+      .then(function(token) { if (token) showSignedIn(decodeJwt(token)); else showSignedOut(); })
+      .catch(function() { showSignedOut(); });
+  </script>
+</body>
+</html>

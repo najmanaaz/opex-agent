@@ -1,13 +1,14 @@
-// POST / (Lambda Function URL): turn a goal into a resource plan.
+// LEGACY anonymous endpoint (POST / on a Lambda Function URL) used by the blog
+// article's embedded demo; replaced by the signed-in OpEx Intelligence API.
 // Flow: validate -> quotas (per visitor, global) -> Claude on Bedrock with a
 // forced tool call whose schema is the plan -> check the plan -> JSON.
 // CORS is configured on the Function URL, not here.
 
-import { BedrockRuntimeClient, ConverseCommand, type ToolInputSchema } from "@aws-sdk/client-bedrock-runtime";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
-import { buildPrompt, checkPlan, parseRequest, PLAN_SCHEMA, SYSTEM_PROMPT } from "./plan";
+import { generatePlan, type PlanError } from "./generate";
+import { parseRequest } from "./plan";
 import { dayBucket, hourBucket, takeQuota, visitorKey } from "./quota";
 
 const MODEL_ID = process.env.MODEL_ID!;
@@ -15,7 +16,6 @@ const TABLE = process.env.QUOTA_TABLE!;
 const PER_VISITOR_PER_HOUR = Number(process.env.PER_VISITOR_PER_HOUR || 10);
 const GLOBAL_PER_DAY = Number(process.env.GLOBAL_PER_DAY || 200);
 
-const bedrock = new BedrockRuntimeClient({});
 const ddb = new DynamoDBClient({});
 const secrets = new SecretsManagerClient({});
 let hashKey: string | undefined;
@@ -59,34 +59,14 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
   }
 
   try {
-    const res = await bedrock.send(new ConverseCommand({
-      modelId: MODEL_ID,
-      system: [{ text: SYSTEM_PROMPT }],
-      messages: [{ role: "user", content: [{ text: buildPrompt(input) }] }],
-      inferenceConfig: { maxTokens: 6000 },
-      toolConfig: {
-        tools: [{ toolSpec: {
-          name: "submit_plan",
-          description: "Submit the finished resource plan for the goal.",
-          inputSchema: { json: PLAN_SCHEMA } as unknown as ToolInputSchema,
-        } }],
-        toolChoice: { tool: { name: "submit_plan" } },
-      },
-    }));
-    const usage = { inputTokens: res.usage?.inputTokens, outputTokens: res.usage?.outputTokens };
-    const plan = res.output?.message?.content?.find((c) => c.toolUse)?.toolUse?.input;
-    const problem = res.stopReason === "max_tokens" ? "plan cut off at max tokens" : checkPlan(plan);
-    if (problem) {
-      log("bad_plan", { problem, stopReason: res.stopReason, ...usage });
-      return json(502, { error: "We couldn't generate your goal decomposition right now. Please try again in a moment." });
-    }
-    log("ok", { model: MODEL_ID, ...usage, subGoals: (plan as { subGoals: unknown[] }).subGoals.length });
+    const { plan, usage } = await generatePlan(MODEL_ID, input);
+    log("ok", { model: MODEL_ID, ...usage, subGoals: (plan.subGoals as unknown[]).length });
     return json(200, plan);
   } catch (e) {
-    log("model_error", { error: (e as Error).name });
-    const throttled = (e as Error).name === "ThrottlingException";
-    return json(throttled ? 429 : 502, {
-      error: throttled
+    const err = e as PlanError;
+    log(err.usage ? "bad_plan" : "model_error", { error: err.message, ...(err.usage ?? {}) });
+    return json(err.throttled ? 429 : 502, {
+      error: err.throttled
         ? "The simulator is busy right now. Please try again in a minute."
         : "We couldn't generate your goal decomposition right now. Please try again in a moment.",
     });

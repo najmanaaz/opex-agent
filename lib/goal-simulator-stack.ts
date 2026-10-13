@@ -8,12 +8,15 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { Construct } from "constructs";
 import { grantInferenceProfile } from "./bedrock-access";
-import type { GoalSimulatorConfig } from "./config";
+import type { OpexConfig } from "./config";
 
 export interface GoalSimulatorStackProps extends StackProps {
-  readonly config: GoalSimulatorConfig;
+  readonly config: OpexConfig;
 }
 
+// LEGACY: the anonymous endpoint behind the blog article's embedded demo. It is
+// retired once the article links to OpEx Intelligence instead.
+//
 // Why a Lambda Function URL and not API Gateway: a Sonnet plan takes ~25 s
 // (measured), and the HTTP API cuts integrations off at 30 s. The Function URL
 // allows the full Lambda timeout; the DynamoDB quotas (and, once the account
@@ -22,7 +25,8 @@ export class GoalSimulatorStack extends Stack {
   constructor(scope: Construct, id: string, props: GoalSimulatorStackProps) {
     super(scope, id, props);
     const { config } = props;
-    Tags.of(this).add("app", config.appName);
+    const appName = "GoalSimulator";
+    Tags.of(this).add("app", appName);
 
     const quotas = new dynamodb.Table(this, "Quotas", {
       partitionKey: { name: "pk", type: dynamodb.AttributeType.STRING },
@@ -42,7 +46,6 @@ export class GoalSimulatorStack extends Stack {
       architecture: lambda.Architecture.ARM_64,
       memorySize: 512,
       timeout: Duration.seconds(90),
-      reservedConcurrentExecutions: config.limits.maxConcurrent,
       tracing: lambda.Tracing.ACTIVE,
       logGroup: new logs.LogGroup(this, "SimulateLogs", {
         retention: logs.RetentionDays.ONE_MONTH,
@@ -52,8 +55,8 @@ export class GoalSimulatorStack extends Stack {
         MODEL_ID: config.modelId,
         QUOTA_TABLE: quotas.tableName,
         HASH_SECRET_ARN: hashKey.secretArn,
-        PER_VISITOR_PER_HOUR: String(config.limits.perVisitorPerHour),
-        GLOBAL_PER_DAY: String(config.limits.globalPerDay),
+        PER_VISITOR_PER_HOUR: String(config.legacy.perVisitorPerHour),
+        GLOBAL_PER_DAY: String(config.legacy.globalPerDay),
       },
       bundling: { minify: true, sourceMap: true },
     });
@@ -64,7 +67,7 @@ export class GoalSimulatorStack extends Stack {
     const url = fn.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
       cors: {
-        allowedOrigins: config.allowedOrigins,
+        allowedOrigins: config.legacy.allowedOrigins,
         allowedMethods: [lambda.HttpMethod.POST],
         allowedHeaders: ["content-type"],
         maxAge: Duration.hours(1),
@@ -74,11 +77,11 @@ export class GoalSimulatorStack extends Stack {
     if (config.budget.alertEmail) {
       new budgets.CfnBudget(this, "MonthlyBudget", {
         budget: {
-          budgetName: `${config.appName}Monthly`,
+          budgetName: `${appName}Monthly`,
           budgetType: "COST",
           timeUnit: "MONTHLY",
           budgetLimit: { amount: config.budget.monthlyLimitUsd, unit: "USD" },
-          costFilters: { TagKeyValue: [`user:app$${config.appName}`] },
+          costFilters: { TagKeyValue: [`user:app$${appName}`] },
         },
         notificationsWithSubscribers: [80, 100].map((threshold) => ({
           notification: { comparisonOperator: "GREATER_THAN", notificationType: "ACTUAL", threshold, thresholdType: "PERCENTAGE" },

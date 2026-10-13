@@ -1,33 +1,57 @@
 // Everything you would change between deployments lives here.
 
-export interface GoalSimulatorConfig {
+export interface OpexConfig {
   readonly appName: string;
   /** One EU region; the model is called through an EU cross-region inference profile. */
   readonly region: string;
   /** Bedrock inference profile id. Switch to eu.anthropic.claude-sonnet-5-5 once the account can use it. */
   readonly modelId: string;
-  /** Sites allowed to call the simulator from a browser. */
-  readonly allowedOrigins: string[];
+  /** The signed-in app (CloudFront custom domain). */
+  readonly appDomain: string;
+  readonly appUrl: string;
+  /** Local origins allowed to sign in and call the API while developing. */
+  readonly devOrigins: string[];
+  /** Links in the app back to the main website. */
+  readonly publicSiteUrl: string;
+  /**
+   * Existing Cognito user pool shared with the Stack Optimizer, so one
+   * T4Tangerine account signs in to both apps. This app adds its own client.
+   */
+  readonly auth: { readonly userPoolId: string; readonly loginUrl: string };
   readonly limits: {
-    readonly perVisitorPerHour: number;
+    readonly perUserPerDay: number;
     readonly globalPerDay: number;
-    /**
-     * Simulations allowed to run at the same time (Lambda reserved concurrency).
-     * Needs an account concurrency limit above 10: AWS keeps at least 10 unreserved,
-     * and new accounts start with exactly 10. Leave undefined until the limit is raised.
-     */
-    readonly maxConcurrent?: number;
   };
   readonly budget: { readonly monthlyLimitUsd: number; readonly alertEmail?: string };
+
+  /** LEGACY anonymous endpoint for the blog's embedded demo (GoalSimulator stack). */
+  readonly legacy: {
+    readonly allowedOrigins: string[];
+    readonly perVisitorPerHour: number;
+    readonly globalPerDay: number;
+  };
 }
 
-export function loadConfig(context: { alertEmail?: string }): GoalSimulatorConfig {
+export function loadConfig(context: { alertEmail?: string }): OpexConfig {
+  const appDomain = "opex.t4tangerine.com";
   return {
-    appName: "GoalSimulator",
+    appName: "OpexIntelligence",
     region: "eu-central-1",
     modelId: "eu.anthropic.claude-sonnet-4-6",
-    allowedOrigins: ["https://www.t4tangerine.com", "https://t4tangerine.com", "http://localhost:3000"],
-    limits: { perVisitorPerHour: 10, globalPerDay: 200, maxConcurrent: undefined },
+    appDomain,
+    appUrl: `https://${appDomain}`,
+    devOrigins: ["http://localhost:3000"],
+    publicSiteUrl: "https://www.t4tangerine.com",
+    auth: {
+      userPoolId: "eu-central-1_CJOLuerYY",
+      loginUrl: "https://t4tangerine-stack-optimizer.auth.eu-central-1.amazoncognito.com",
+    },
+    limits: { perUserPerDay: 20, globalPerDay: 300 },
     budget: { monthlyLimitUsd: 50, alertEmail: context.alertEmail },
+    legacy: {
+      allowedOrigins: ["https://www.t4tangerine.com", "https://t4tangerine.com", "http://localhost:3000"],
+      perVisitorPerHour: 10,
+      globalPerDay: 200,
+    },
   };
 }
