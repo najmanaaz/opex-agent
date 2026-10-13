@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["es2022"],
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node", "aws-lambda"],
+    "outDir": "dist"
+  },
+  "include": ["bin/**/*.ts", "lib/**/*.ts", "lambda/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "cdk.out", "dist"]
+}
