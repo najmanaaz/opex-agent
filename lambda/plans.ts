@@ -1,4 +1,4 @@
-// OpEx Intelligence API (HTTP API, Cognito JWT authorizer). Every route acts
+// OpEx Agent API (HTTP API, Cognito JWT authorizer). Every route acts
 // only on the caller's own plans: the user id is the token's `sub`, never a
 // request field.
 //
@@ -63,7 +63,7 @@ export async function handler(event: APIGatewayProxyEventV2WithJWTAuthorizer): P
       }
       if (!(await takeQuota(raw, QUOTAS, `global#${dayBucket(now)}`, GLOBAL_PER_DAY, now, 2 * 86400))) {
         log("global_quota");
-        return json(429, { error: "OpEx Intelligence has reached today's limit. Please try again tomorrow." });
+        return json(429, { error: "OpEx Agent has reached today's limit. Please try again tomorrow." });
       }
 
       const planId = newPlanId(now);
