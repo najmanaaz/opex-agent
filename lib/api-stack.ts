@@ -17,7 +17,7 @@ export interface ApiStackProps extends StackProps {
   readonly config: OpexConfig;
 }
 
-// Signed-in OpEx Agent backend:
+// Signed-in OpEx Intelligence backend:
 // - an app client in the shared T4Tangerine Cognito user pool
 // - an HTTP API whose routes all require a valid Cognito ID token
 // - a plans table keyed by the token's user id, so users only ever see their own

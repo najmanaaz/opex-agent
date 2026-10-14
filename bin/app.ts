@@ -10,22 +10,22 @@ const app = new App();
 const config = loadConfig({ alertEmail: app.node.tryGetContext("alertEmail") });
 const account = process.env.CDK_DEFAULT_ACCOUNT;
 
-// OpEx Agent: signed-in app at opex.t4tangerine.com
+// OpEx Intelligence: signed-in app at opex.t4tangerine.com
 const cert = new CertStack(app, "OpexIntelligence-Cert", {
   env: { account, region: "us-east-1" },
   crossRegionReferences: true,
-  description: "OpEx Agent: HTTPS certificate for CloudFront",
+  description: "OpEx Intelligence: HTTPS certificate for CloudFront",
   config,
 });
 const api = new ApiStack(app, "OpexIntelligence-Api", {
   env: { account, region: config.region },
-  description: "OpEx Agent: Cognito-protected plans API, async worker, Claude on Amazon Bedrock",
+  description: "OpEx Intelligence: Cognito-protected plans API, async worker, Claude on Amazon Bedrock",
   config,
 });
 new WebStack(app, "OpexIntelligence-Web", {
   env: { account, region: config.region },
   crossRegionReferences: true,
-  description: "OpEx Agent: S3 + CloudFront app",
+  description: "OpEx Intelligence: S3 + CloudFront app",
   config,
   certificate: cert.certificate,
   apiUrl: api.apiUrl,

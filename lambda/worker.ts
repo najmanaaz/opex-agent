@@ -57,7 +57,7 @@ export async function handler(event: { userId: string; planId: string }): Promis
     await finish(userId, planId, {
       status: "FAILED",
       error: err.throttled
-        ? "OpEx Agent was busy. Please create the plan again in a minute."
+        ? "OpEx Intelligence was busy. Please create the plan again in a minute."
         : "We couldn't generate this plan. Please try again.",
     });
     log("failed", { error: err.message, ...(err.usage ?? {}) });
