@@ -1,5 +1,5 @@
 // LEGACY anonymous endpoint (POST / on a Lambda Function URL) used by the blog
-// article's embedded demo; replaced by the signed-in Capacity Planning API.
+// article's embedded demo; replaced by the signed-in OpEx Agent API.
 // Flow: validate -> quotas (per visitor, global) -> Claude on Bedrock with a
 // forced tool call whose schema is the plan -> check the plan -> JSON.
 // CORS is configured on the Function URL, not here.

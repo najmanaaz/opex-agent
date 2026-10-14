@@ -15,7 +15,7 @@ export interface GoalSimulatorStackProps extends StackProps {
 }
 
 // LEGACY: the anonymous endpoint behind the blog article's embedded demo. It is
-// retired once the article links to Capacity Planning instead.
+// retired once the article links to OpEx Agent instead.
 //
 // Why a Lambda Function URL and not API Gateway: a Sonnet plan takes ~25 s
 // (measured), and the HTTP API cuts integrations off at 30 s. The Function URL
