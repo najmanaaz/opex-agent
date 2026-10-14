@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { buildPrompt, checkPlan, LIMITS, parseRequest, PLAN_SCHEMA } from "../lambda/plan";
 
-const ok = { goal: "Cut Tier 1 first-response time from 4.2 to 2 hours", teamSize: 6, timeline: 12, domain: "Engineering,Operations",
+const ok = { goal: "Cut Tier 1 first-response time from 4.2 to 2 hours", teamSize: 4, timeline: 12, domain: "Engineering,Operations",
   availableRoles: [{ role: "Backend Engineer", count: 3 }, { role: "Support Lead", count: "1" }] };
 
 test("accepts a normal request and normalises it", () => {
   const r = parseRequest(ok);
   assert.ok(!("error" in r));
-  assert.equal(r.teamSize, 6);
+  assert.equal(r.teamSize, 4); // 3 + 1 listed
   assert.deepEqual(r.domains, ["Engineering", "Operations"]);
   assert.deepEqual(r.roles, [{ role: "Backend Engineer", count: 3 }, { role: "Support Lead", count: 1 }]);
 });
@@ -22,7 +22,7 @@ test("rejects goals that are too short or too long", () => {
 test("clamps numbers and drops unknown domains and junk roles", () => {
   const r = parseRequest({ ...ok, teamSize: 10_000, timeline: -3, domain: "Marketing", availableRoles: [{ role: 42 }, { role: "  " }, { role: "QA", count: 999 }] });
   assert.ok(!("error" in r));
-  assert.equal(r.teamSize, LIMITS.teamSize.max);
+  assert.equal(r.teamSize, LIMITS.roleCount.max); // the one role left, clamped
   assert.equal(r.timelineWeeks, LIMITS.timelineWeeks.min);
   assert.deepEqual(r.domains, ["Engineering"]);
   assert.deepEqual(r.roles, [{ role: "QA", count: LIMITS.roleCount.max }]);
@@ -42,7 +42,7 @@ test("the prompt fences the user's goal and states the constraints", () => {
   const p = buildPrompt(r);
   assert.match(p, /<goal>\nCut Tier 1/);
   assert.match(p, /Timeline constraint: 12 weeks/);
-  assert.match(p, /team size of 6/);
+  assert.match(p, /team size of 4/);
 });
 
 test("checkPlan accepts a complete plan and names what is missing", () => {
@@ -52,4 +52,12 @@ test("checkPlan accepts a complete plan and names what is missing", () => {
   const { summary: _, ...noSummary } = plan;
   assert.equal(checkPlan(noSummary), "missing summary");
   assert.equal(checkPlan({ ...plan, subGoals: [] }), "no sub-goals");
+});
+
+test("team size is the total of the listed roles, whatever teamSize says", () => {
+  const r = parseRequest({ goal: "Cut first-response time to under 2 hours", availableRoles: [{ role: "Operations / Support", count: 6 }, { role: "Data Analyst", count: 1 }], teamSize: 3 });
+  assert.ok(!("error" in r));
+  if (!("error" in r)) assert.equal(r.teamSize, 7);
+  const none = parseRequest({ goal: "Cut first-response time to under 2 hours", teamSize: 4 });
+  if (!("error" in none)) assert.equal(none.teamSize, 4);
 });

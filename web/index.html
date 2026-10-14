@@ -133,6 +133,21 @@
     .pdf-export .result-grid { grid-template-columns: 1fr 1fr; }
     .pdf-export .pdf-footer { margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); text-align: center; }
 
+    /* Signed-out explainer */
+    .about-block { margin-bottom: 34px; }
+    .about-block > h2 { font-size: 22px; margin-bottom: 4px; }
+    .about-block > .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+    .tiles { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .tile { border: 1px solid var(--border); border-radius: 12px; padding: 18px; background: var(--white); }
+    .tile h3 { font-size: 16px; margin-bottom: 6px; }
+    .tile p { font-size: 14px; }
+    .step-num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--amber); color: var(--dark); font-weight: 700; font-size: 13px; align-items: center; justify-content: center; margin-bottom: 8px; }
+    .example { border: 1px solid var(--border); border-radius: 12px; padding: 20px; background: var(--white); position: relative; }
+    .example.clipped { max-height: 620px; overflow: hidden; }
+    .example.clipped::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 120px; background: linear-gradient(rgba(255,255,255,0), #fff); }
+    .tag-ex { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: #EEF2FF; color: #3730A3; border-radius: 4px; padding: 2px 8px; margin-bottom: 10px; }
+    @media (min-width: 768px) { .tiles { grid-template-columns: repeat(3, 1fr); } }
+
     footer { border-top: 1px solid var(--border); margin-top: 56px; padding: 28px 0; font-size: 13px; color: var(--muted); }
     footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 
@@ -180,6 +195,32 @@
   </header>
 
   <main class="container">
+    <section id="about" hidden>
+      <div class="about-block">
+        <h2>What you get</h2>
+        <p class="sub">Before you commit to a goal, see what it will take.</p>
+        <div class="tiles">
+          <div class="tile"><h3>The work, in order</h3><p>The goal broken into 3–6 steps, with how long each takes and what depends on what.</p></div>
+          <div class="tile"><h3>People and gaps</h3><p>Who works on it, at what share of their time, the skills it needs, and the hires you're missing, by priority.</p></div>
+          <div class="tile"><h3>Cost and risk</h3><p>What drives the cost, the P&amp;L line the goal moves, and the risks to plan for, with a way to reduce each.</p></div>
+        </div>
+      </div>
+      <div class="about-block">
+        <h2>How it works</h2>
+        <div class="tiles">
+          <div class="tile"><span class="step-num">1</span><h3>Describe the goal</h3><p>The outcome, the number and the deadline, plus the people you have.</p></div>
+          <div class="tile"><span class="step-num">2</span><h3>Get the plan in 30 seconds</h3><p>Built by Claude on Amazon Bedrock, in the EU. Free, up to 20 plans a day.</p></div>
+          <div class="tile"><span class="step-num">3</span><h3>Keep and share it</h3><p>Plans are saved to your account and download as a PDF for your leadership team.</p></div>
+        </div>
+      </div>
+      <div class="about-block">
+        <h2>An example plan</h2>
+        <p class="sub">A real plan from OpEx Agent for a sample support goal.</p>
+        <div class="example clipped" id="example"><p class="hint">Loading the example…</p></div>
+        <p style="margin-top:12px;"><button type="button" class="btn-ghost" id="exampleMore" hidden>Show the full example</button></p>
+      </div>
+    </section>
+
     <section class="card gate" id="gate" hidden>
       <h2>Sign in to plan your goals</h2>
       <p>Use your T4Tangerine account (the same one as the Stack Optimizer). Your plans are saved to your account, stored in the EU, and only you can see them.</p>
@@ -290,9 +331,9 @@
     }
     function readJson(res) { return res.status === 204 ? Promise.resolve({}) : res.json().catch(function() { return {}; }); }
 
-    function showSignedOut() { $('gate').hidden = false; $('app').hidden = true; }
+    function showSignedOut() { $('gate').hidden = false; $('about').hidden = false; $('app').hidden = true; loadExample(); }
     function showSignedIn(claims) {
-      $('gate').hidden = true; $('app').hidden = false;
+      $('gate').hidden = true; $('about').hidden = true; $('app').hidden = false;
       loadPlans();
     }
 
@@ -558,6 +599,17 @@
       });
       pdf.save(filename);
     }
+
+    // ── Example plan for signed-out visitors (a real OpEx Agent output) ──
+    var exampleLoaded = false;
+    function loadExample() {
+      if (exampleLoaded) return; exampleLoaded = true;
+      fetch('/example-plan.json').then(function(r) { return r.json(); }).then(function(ex) {
+        $('example').innerHTML = '<span class="tag-ex">Example plan · ' + escapeHtml(ex.date) + '</span>' + inputsHtml(ex.input) + planBodyHtml(ex.plan);
+        $('exampleMore').hidden = false;
+      }).catch(function() { $('example').innerHTML = ''; });
+    }
+    $('exampleMore').addEventListener('click', function() { $('example').classList.remove('clipped'); $('exampleMore').hidden = true; });
 
     // ── Start ──
     addRoleRow();

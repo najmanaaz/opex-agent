@@ -50,7 +50,10 @@ export function parseRequest(body: unknown): SimulationInput | { error: string }
     .filter((d): d is string => (DOMAINS as readonly string[]).includes(d));
   return {
     goal,
-    teamSize: clampInt(b.teamSize, LIMITS.teamSize.min, LIMITS.teamSize.max, LIMITS.teamSize.fallback),
+    // With roles listed, the team is their total; a separate teamSize could contradict them.
+    teamSize: roles.length
+      ? Math.min(LIMITS.teamSize.max, roles.reduce((n, r) => n + r.count, 0))
+      : clampInt(b.teamSize, LIMITS.teamSize.min, LIMITS.teamSize.max, LIMITS.teamSize.fallback),
     roles,
     timelineWeeks: clampInt(b.timeline, LIMITS.timelineWeeks.min, LIMITS.timelineWeeks.max, LIMITS.timelineWeeks.fallback),
     domains: domains.length ? domains : ["Engineering"],
