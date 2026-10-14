@@ -1,17 +1,7 @@
-// Usage quotas in DynamoDB: per visitor per hour, and for everyone per day.
+// Usage quotas in DynamoDB: per user per day, and for everyone per day.
 // Each quota is one item with an atomic counter that expires on its own (TTL).
-// Visitors are keyed by an HMAC of their IP address, so no raw IPs are stored.
 
-import { createHmac } from "node:crypto";
 import { ConditionalCheckFailedException, UpdateItemCommand, type DynamoDBClient } from "@aws-sdk/client-dynamodb";
-
-export function visitorKey(ip: string, secret: string): string {
-  return createHmac("sha256", secret).update(ip).digest("base64url").slice(0, 22);
-}
-
-export function hourBucket(now: Date): string {
-  return now.toISOString().slice(0, 13); // 2026-10-13T19
-}
 
 export function dayBucket(now: Date): string {
   return now.toISOString().slice(0, 10); // 2026-10-13

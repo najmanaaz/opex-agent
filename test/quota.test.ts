@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
-import { dayBucket, hourBucket, takeQuota, visitorKey } from "../lambda/quota";
+import { dayBucket, takeQuota } from "../lambda/quota";
 
 // In-memory stand-in for DynamoDB that honours the conditional update
 function fakeDdb() {
@@ -33,16 +33,7 @@ test("other errors are not mistaken for an exhausted quota", async () => {
   await assert.rejects(takeQuota(ddb as never, "t", "k", 3, new Date(), 60), /boom/);
 });
 
-test("visitor keys are stable, secret-dependent and never the raw IP", () => {
-  const a = visitorKey("203.0.113.7", "s1");
-  assert.equal(a, visitorKey("203.0.113.7", "s1"));
-  assert.notEqual(a, visitorKey("203.0.113.7", "s2"));
-  assert.notEqual(a, visitorKey("203.0.113.8", "s1"));
-  assert.ok(!a.includes("203"));
-});
-
-test("buckets roll over by the hour and the day", () => {
-  assert.equal(hourBucket(new Date("2026-10-13T19:59:59Z")), "2026-10-13T19");
-  assert.equal(hourBucket(new Date("2026-10-13T20:00:00Z")), "2026-10-13T20");
+test("the day bucket rolls over at midnight UTC", () => {
   assert.equal(dayBucket(new Date("2026-10-13T23:59:59Z")), "2026-10-13");
+  assert.equal(dayBucket(new Date("2026-10-14T00:00:00Z")), "2026-10-14");
 });

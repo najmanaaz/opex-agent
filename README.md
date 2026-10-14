@@ -36,7 +36,7 @@ flowchart LR
     B -.->|poll GET /plans/id| API
 ```
 
-The app is four CDK stacks: `OpexIntelligence-Cert` (us-east-1, for CloudFront), `-Api`, `-Web`, and the legacy public endpoint (below). Everything else runs in `eu-central-1`, and the model runs through an EU cross-region inference profile, so data stays in the EU.
+The app is three CDK stacks: `OpexIntelligence-Cert` (us-east-1, for CloudFront), `-Api` and `-Web`. Everything else runs in `eu-central-1`, and the model runs through an EU cross-region inference profile, so data stays in the EU.
 
 | Route | What it does |
 |---|---|
@@ -86,7 +86,7 @@ The app is four CDK stacks: `OpexIntelligence-Cert` (us-east-1, for CloudFront),
 
 ### Legacy public endpoint
 
-`lambda/simulate.ts` and `lib/goal-simulator-stack.ts` are the first version: an anonymous Lambda Function URL behind the blog article's embedded demo. It is being retired as the article moves to linking the signed-in app. It used per-visitor quotas keyed by an HMAC of the IP address, so no raw IPs were stored.
+The first version was an anonymous Lambda Function URL behind the blog article's embedded demo, with per-visitor quotas keyed by an HMAC of the IP address (no raw IPs stored). It was retired once the article linked to the signed-in app; its code is in this repo's history (commit `4182b46`).
 
 ## Repository map
 

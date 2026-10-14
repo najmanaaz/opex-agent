@@ -23,13 +23,6 @@ export interface OpexConfig {
     readonly globalPerDay: number;
   };
   readonly budget: { readonly monthlyLimitUsd: number; readonly alertEmail?: string };
-
-  /** LEGACY anonymous endpoint for the blog's embedded demo (GoalSimulator stack). */
-  readonly legacy: {
-    readonly allowedOrigins: string[];
-    readonly perVisitorPerHour: number;
-    readonly globalPerDay: number;
-  };
 }
 
 export function loadConfig(context: { alertEmail?: string }): OpexConfig {
@@ -48,10 +41,5 @@ export function loadConfig(context: { alertEmail?: string }): OpexConfig {
     },
     limits: { perUserPerDay: 20, globalPerDay: 300 },
     budget: { monthlyLimitUsd: 50, alertEmail: context.alertEmail },
-    legacy: {
-      allowedOrigins: ["https://www.t4tangerine.com", "https://t4tangerine.com", "http://localhost:3000"],
-      perVisitorPerHour: 10,
-      globalPerDay: 200,
-    },
   };
 }

@@ -3,7 +3,6 @@ import { App } from "aws-cdk-lib";
 import { ApiStack } from "../lib/api-stack";
 import { CertStack } from "../lib/cert-stack";
 import { loadConfig } from "../lib/config";
-import { GoalSimulatorStack } from "../lib/goal-simulator-stack";
 import { WebStack } from "../lib/web-stack";
 
 const app = new App();
@@ -30,11 +29,4 @@ new WebStack(app, "OpexIntelligence-Web", {
   certificate: cert.certificate,
   apiUrl: api.apiUrl,
   userPoolClientId: api.userPoolClientId,
-});
-
-// LEGACY anonymous endpoint behind the blog article's embedded demo
-new GoalSimulatorStack(app, "GoalSimulator", {
-  env: { account, region: config.region },
-  description: "Goal decomposition simulator: Lambda Function URL + Claude on Amazon Bedrock",
-  config,
 });
