@@ -125,7 +125,7 @@ export class ApiStack extends Stack {
     });
     const authorizer = new HttpJwtAuthorizer("CognitoAuthorizer",
       `https://cognito-idp.${this.region}.amazonaws.com/${config.auth.userPoolId}`,
-      { jwtAudience: [client.userPoolClientId] });
+      { jwtAudience: [client.userPoolClientId, config.auth.siteClientId] });
     const integration = new HttpLambdaIntegration("PlansIntegration", api);
     httpApi.addRoutes({ path: "/plans", methods: [apigw.HttpMethod.GET, apigw.HttpMethod.POST], integration, authorizer });
     httpApi.addRoutes({ path: "/plans/{planId}", methods: [apigw.HttpMethod.GET, apigw.HttpMethod.DELETE], integration, authorizer });

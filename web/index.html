@@ -148,6 +148,7 @@
       .mobile-links { display: flex; }
     }
   </style>
+  <script src="/t4t-auth.js"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -190,10 +191,6 @@
     </section>
 
     <section id="app" hidden>
-      <div class="account-bar">
-        <span>Signed in as <strong id="userEmail"></strong></span>
-        <button type="button" class="btn-link" id="signOutBtn">Sign out</button>
-      </div>
 
       <div class="app-grid">
         <form class="card" id="planForm" novalidate>
@@ -250,7 +247,6 @@
       'Data Engineer', 'Data Scientist / ML Engineer', 'Data Analyst', 'Product Manager', 'Product Designer', 'UX Researcher',
       'Engineering Manager', 'Technical Program Manager', 'QA / Test Engineer', 'Security Engineer', 'Solutions Architect',
       'Technical Writer', 'Operations / Support'];
-    var AUTH_KEY = 't4t.opexApp.auth.v1';
     var appCfg = null;
     var currentPlan = null;
 
@@ -268,66 +264,12 @@
         d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     }
 
-    // ── Sign-in: authorization code flow with PKCE against the Cognito managed login ──
-    function b64url(bytes) {
-      var str = '';
-      bytes.forEach(function(b) { str += String.fromCharCode(b); });
-      return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
-    function randomString() { var b = new Uint8Array(32); crypto.getRandomValues(b); return b64url(b); }
-    function decodeJwt(token) {
-      var part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(part), function(c) { return c.charCodeAt(0); })));
-    }
-    function redirectUri() { return location.origin + '/'; }
-
-    function startLogin(signUp) {
-      var verifier = randomString(), state = randomString();
-      try { sessionStorage.setItem('t4t.opex.pkce', JSON.stringify({ verifier: verifier, state: state })); } catch (e) {}
-      crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)).then(function(hash) {
-        var query = new URLSearchParams({
-          response_type: 'code', client_id: appCfg.clientId, redirect_uri: redirectUri(),
-          scope: 'openid email profile', state: state,
-          code_challenge: b64url(new Uint8Array(hash)), code_challenge_method: 'S256'
-        });
-        location.assign(appCfg.loginUrl + (signUp ? '/signup' : '/oauth2/authorize') + '?' + query);
-      });
-    }
-    function tokenRequest(params) {
-      return fetch(appCfg.loginUrl + '/oauth2/token', {
-        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(params)
-      }).then(function(res) { if (!res.ok) throw new Error('Sign-in failed (' + res.status + ')'); return res.json(); });
-    }
-    function loadAuth() { try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { return null; } }
-    function saveTokens(tokens, previousRefresh) {
-      var auth = { idToken: tokens.id_token, expiresAt: Date.now() + (tokens.expires_in || 3600) * 1000, refreshToken: tokens.refresh_token || previousRefresh };
-      try { localStorage.setItem(AUTH_KEY, JSON.stringify(auth)); } catch (e) {}
-      return auth;
-    }
-    function clearAuth() { try { localStorage.removeItem(AUTH_KEY); } catch (e) {} }
-    function getIdToken(forceRefresh) {
-      var auth = loadAuth();
-      if (!auth) return Promise.resolve(null);
-      if (!forceRefresh && auth.idToken && auth.expiresAt - 60000 > Date.now()) return Promise.resolve(auth.idToken);
-      if (!auth.refreshToken) return Promise.resolve(null);
-      return tokenRequest({ grant_type: 'refresh_token', client_id: appCfg.clientId, refresh_token: auth.refreshToken })
-        .then(function(t) { return saveTokens(t, auth.refreshToken).idToken; })
-        .catch(function() { clearAuth(); return null; });
-    }
-    function handleLoginRedirect() {
-      var query = new URLSearchParams(location.search);
-      if (!query.get('code')) return Promise.resolve();
-      var pkce = null;
-      try { pkce = JSON.parse(sessionStorage.getItem('t4t.opex.pkce') || 'null'); sessionStorage.removeItem('t4t.opex.pkce'); } catch (e) {}
-      history.replaceState(null, '', location.pathname);
-      if (!pkce || query.get('state') !== pkce.state) return Promise.resolve();
-      return tokenRequest({ grant_type: 'authorization_code', client_id: appCfg.clientId, code: query.get('code'), redirect_uri: redirectUri(), code_verifier: pkce.verifier })
-        .then(function(t) { saveTokens(t); });
-    }
-    function signOut() {
-      clearAuth();
-      location.assign(appCfg.loginUrl + '/logout?' + new URLSearchParams({ client_id: appCfg.clientId, logout_uri: redirectUri() }));
-    }
+    // Sign-in is shared by every T4Tangerine site (one account, one session): /t4t-auth.js
+    function decodeJwt(token) { return T4T.auth.decodeJwt(token); }
+    function startLogin(signUp) { T4T.auth.signIn(signUp); }
+    function getIdToken(forceRefresh) { return T4T.auth.getIdToken(forceRefresh); }
+    function handleLoginRedirect() { return T4T.auth.init(); }
+    function signOut() { T4T.auth.signOut(); }
 
     // Calls the API with the signed-in user's token; refreshes it once on 401
     function api(path, options) {
@@ -351,7 +293,6 @@
     function showSignedOut() { $('gate').hidden = false; $('app').hidden = true; }
     function showSignedIn(claims) {
       $('gate').hidden = true; $('app').hidden = false;
-      $('userEmail').textContent = claims.email || 'your account';
       loadPlans();
     }
 
@@ -624,7 +565,6 @@
     $('planForm').addEventListener('submit', createPlan);
     $('signInBtn').addEventListener('click', function() { startLogin(false); });
     $('signUpBtn').addEventListener('click', function() { startLogin(true); });
-    $('signOutBtn').addEventListener('click', signOut);
     fetch('/app-config.json')
       .then(function(res) { return res.json(); })
       .then(function(cfg) { appCfg = cfg; return handleLoginRedirect(); })
