@@ -46,7 +46,7 @@ export class WebStack extends Stack {
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src https://fonts.gstatic.com",
             "img-src 'self' data:",
-            `connect-src 'self' https://*.execute-api.${this.region}.amazonaws.com https://*.auth.${this.region}.amazoncognito.com https://cdn.jsdelivr.net`,
+            `connect-src 'self' https://*.execute-api.${this.region}.amazonaws.com https://*.auth.${this.region}.amazoncognito.com https://login.t4tangerine.com https://cdn.jsdelivr.net`,
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'",

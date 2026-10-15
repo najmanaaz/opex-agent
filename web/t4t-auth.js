@@ -13,7 +13,7 @@
 (function () {
   'use strict';
   var CLIENT_ID = '1ttnb9dnrgj4lll1g0sfg4np71';
-  var LOGIN_URL = 'https://t4tangerine-stack-optimizer.auth.eu-central-1.amazoncognito.com';
+  var LOGIN_URL = 'https://login.t4tangerine.com';
   var ACCOUNT_URL = 'https://www.t4tangerine.com/account';
   var COOKIE_RT = 't4t_rt', COOKIE_USER = 't4t_user';
   var SESSION_DAYS = 30;

@@ -42,7 +42,7 @@ export function loadConfig(context: { alertEmail?: string }): OpexConfig {
     publicSiteUrl: "https://www.t4tangerine.com",
     auth: {
       userPoolId: "eu-central-1_CJOLuerYY",
-      loginUrl: "https://t4tangerine-stack-optimizer.auth.eu-central-1.amazoncognito.com",
+      loginUrl: "https://login.t4tangerine.com",
       siteClientId: "1ttnb9dnrgj4lll1g0sfg4np71",
     },
     limits: { perUserPerDay: 20, globalPerDay: 300 },
