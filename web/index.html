@@ -28,6 +28,8 @@
     .navbar .container { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
     .navbar-logo { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--white); letter-spacing: -0.02em; white-space: nowrap; }
     .navbar-logo .logo-dot { color: var(--amber); }
+    .logo-tagline { font-family: var(--font-sans); font-size: 13px; font-weight: 500; opacity: 0.5; letter-spacing: 0; }
+    @media (max-width: 1279px) { .navbar .logo-tagline { display: none; } }
     .navbar-links { display: none; list-style: none; gap: 28px; align-items: center; }
     .navbar-links a { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); white-space: nowrap; }
     .navbar-links a:hover, .navbar-links a.active { color: var(--white); }
@@ -168,7 +170,7 @@
 <body>
   <nav class="navbar">
     <div class="container">
-      <a href="https://www.t4tangerine.com/" class="navbar-logo">🍊T4Tangerine<span class="logo-dot">.</span></a>
+      <a href="https://www.t4tangerine.com/" class="navbar-logo">🍊T4Tangerine<span class="logo-dot">.</span> <span class="logo-tagline">| AI Strategy &amp; Consulting</span></a>
       <ul class="navbar-links">
         <li><a href="https://www.t4tangerine.com/aeo">AI Visibility</a></li>
         <li><a href="https://stack.t4tangerine.com/">Spend Intelligence</a></li>
